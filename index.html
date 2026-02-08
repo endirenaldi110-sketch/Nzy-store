@@ -1,0 +1,1369 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ENZY-STORE - Panel Nokos Pterodactyl</title>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-dark: #4338ca;
+            --secondary: #10b981;
+            --dark: #1f2937;
+            --light: #f9fafb;
+            --gray: #9ca3af;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f3f4f6;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* Header */
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 1.5rem 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+        
+        .logo i {
+            color: #10b981;
+        }
+        
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 1.5rem;
+        }
+        
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: background 0.3s;
+        }
+        
+        nav a:hover, nav a.active {
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+        
+        .cart-icon {
+            position: relative;
+            font-size: 1.3rem;
+            cursor: pointer;
+        }
+        
+        .cart-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background-color: var(--danger);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(rgba(79, 70, 229, 0.9), rgba(67, 56, 202, 0.9)), url('https://images.unsplash.com/photo-1550745165-9bc0b252726f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            padding: 4rem 0;
+            text-align: center;
+            border-radius: 0 0 20px 20px;
+            margin-bottom: 3rem;
+        }
+        
+        .hero h1 {
+            font-size: 2.8rem;
+            margin-bottom: 1rem;
+        }
+        
+        .hero p {
+            font-size: 1.2rem;
+            max-width: 700px;
+            margin: 0 auto 1.5rem;
+        }
+        
+        /* Main Content */
+        section {
+            margin-bottom: 3rem;
+        }
+        
+        .section-title {
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .section-title i {
+            color: var(--secondary);
+        }
+        
+        /* Product Grid */
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .product-card {
+            background-color: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 20px rgba(0, 0, 0, 0.12);
+        }
+        
+        .product-header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 1.2rem;
+            text-align: center;
+        }
+        
+        .product-header h3 {
+            font-size: 1.4rem;
+            margin-bottom: 5px;
+        }
+        
+        .product-price {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #10b981;
+        }
+        
+        .product-price span {
+            font-size: 1rem;
+            color: #d1d5db;
+        }
+        
+        .product-body {
+            padding: 1.5rem;
+        }
+        
+        .product-features {
+            list-style: none;
+            margin-bottom: 1.5rem;
+        }
+        
+        .product-features li {
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .product-features li:last-child {
+            border-bottom: none;
+        }
+        
+        .feature-value {
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        .btn {
+            display: inline-block;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+            width: 100%;
+            text-align: center;
+            text-decoration: none;
+        }
+        
+        .btn:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        .btn-secondary {
+            background-color: var(--secondary);
+        }
+        
+        .btn-secondary:hover {
+            background-color: #0da271;
+        }
+        
+        .btn-warning {
+            background-color: var(--warning);
+        }
+        
+        .btn-warning:hover {
+            background-color: #d97706;
+        }
+        
+        /* Country Selection */
+        .country-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .country-option {
+            background-color: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        
+        .country-option:hover {
+            border-color: var(--primary);
+        }
+        
+        .country-option.selected {
+            border-color: var(--primary);
+            background-color: rgba(79, 70, 229, 0.05);
+        }
+        
+        .country-flag {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        
+        .country-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .country-price {
+            color: var(--secondary);
+            font-weight: 700;
+        }
+        
+        /* Chat Section */
+        .chat-section {
+            background-color: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+            display: none;
+            height: 600px;
+            flex-direction: column;
+        }
+        
+        .chat-header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .chat-header h3 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            background-color: rgba(255, 255, 255, 0.2);
+            padding: 5px 10px;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+        
+        .close-chat {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        
+        .chat-container {
+            padding: 1.5rem;
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            background-color: #f8fafc;
+        }
+        
+        .message {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            line-height: 1.4;
+            word-wrap: break-word;
+        }
+        
+        .message-user {
+            align-self: flex-end;
+            background-color: var(--primary);
+            color: white;
+            border-bottom-right-radius: 5px;
+        }
+        
+        .message-other {
+            align-self: flex-start;
+            background-color: white;
+            color: var(--dark);
+            border-bottom-left-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+        
+        .message-info {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+            font-size: 0.75rem;
+            opacity: 0.8;
+        }
+        
+        .message-sender {
+            font-weight: 600;
+        }
+        
+        .chat-input-container {
+            padding: 1rem;
+            border-top: 1px solid #e5e7eb;
+            background-color: white;
+        }
+        
+        .chat-input {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .chat-input input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+        
+        .chat-input button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0 20px;
+            cursor: pointer;
+            transition: background 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .chat-input button:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        .open-chat-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 6px 15px rgba(79, 70, 229, 0.3);
+            z-index: 99;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Username Modal */
+        .username-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .username-content {
+            background-color: white;
+            width: 90%;
+            max-width: 400px;
+            border-radius: 12px;
+            overflow: hidden;
+            padding: 2rem;
+        }
+        
+        .username-content h3 {
+            margin-bottom: 1.5rem;
+            color: var(--primary);
+            text-align: center;
+        }
+        
+        .username-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .username-form input {
+            padding: 12px 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+        
+        .username-form button {
+            margin-top: 10px;
+        }
+        
+        /* Cart Modal */
+        .cart-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .cart-content {
+            background-color: white;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .cart-header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 1.2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .cart-items {
+            padding: 1.5rem;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .cart-item:last-child {
+            border-bottom: none;
+        }
+        
+        .cart-total {
+            padding: 1.2rem;
+            border-top: 2px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+        
+        .cart-actions {
+            padding: 1rem 1.5rem 1.5rem;
+            display: flex;
+            gap: 10px;
+        }
+        
+        /* Footer */
+        footer {
+            background-color: var(--dark);
+            color: white;
+            padding: 2.5rem 0;
+            margin-top: 3rem;
+        }
+        
+        .footer-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        
+        .footer-logo {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: #10b981;
+        }
+        
+        .copyright {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            nav ul {
+                gap: 1rem;
+            }
+            
+            .hero h1 {
+                font-size: 2.2rem;
+            }
+            
+            .product-grid {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            }
+            
+            .country-options {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+            
+            .message {
+                max-width: 85%;
+            }
+            
+            .chat-section {
+                height: 500px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container header-content">
+            <div class="logo">
+                <i class="fas fa-server"></i>
+                <span>ENZY-STORE</span>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="#" class="active">Beranda</a></li>
+                    <li><a href="#produk">Produk</a></li>
+                    <li><a href="#chat">Room Chat</a></li>
+                </ul>
+            </nav>
+            <div class="cart-icon" id="cartIcon">
+                <i class="fas fa-shopping-cart"></i>
+                <span class="cart-count" id="cartCount">0</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <h1>Panel Nokos Pterodactyl Premium</h1>
+            <p>Dapatkan panel nokos Pterodactyl dengan konfigurasi RAM 1GB hingga 10GB. Pilih negara server sesuai kebutuhan Anda dengan harga terjangkau.</p>
+            <a href="#produk" class="btn btn-secondary">Lihat Produk <i class="fas fa-arrow-right"></i></a>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Products Section -->
+        <section id="produk">
+            <h2 class="section-title"><i class="fas fa-box-open"></i> Produk Panel Nokos</h2>
+            <p class="section-subtitle">Pilih paket RAM sesuai kebutuhan Anda. Harga: Rp 1.000 per 1GB</p>
+            
+            <div class="product-grid" id="productGrid">
+                <!-- Products will be generated by JavaScript -->
+            </div>
+        </section>
+
+        <!-- Country Selection -->
+        <section id="country">
+            <h2 class="section-title"><i class="fas fa-globe-asia"></i> Pilih Negara Server</h2>
+            <p class="section-subtitle">Untuk layanan nokos, pilih negara server. Indonesia harga Rp 5.000, negara lain Rp 10.000</p>
+            
+            <div class="country-options" id="countryOptions">
+                <!-- Country options will be generated by JavaScript -->
+            </div>
+        </section>
+
+        <!-- Cart Modal -->
+        <div class="cart-modal" id="cartModal">
+            <div class="cart-content">
+                <div class="cart-header">
+                    <h3><i class="fas fa-shopping-cart"></i> Keranjang Belanja</h3>
+                    <button class="close-chat" id="closeCart">&times;</button>
+                </div>
+                <div class="cart-items" id="cartItems">
+                    <!-- Cart items will be generated by JavaScript -->
+                </div>
+                <div class="cart-total">
+                    <span>Total:</span>
+                    <span id="cartTotal">Rp 0</span>
+                </div>
+                <div class="cart-actions">
+                    <button class="btn" id="checkoutBtn">Checkout</button>
+                    <button class="btn" style="background-color: var(--gray);" id="clearCartBtn">Kosongkan</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Section -->
+        <section id="chat">
+            <h2 class="section-title"><i class="fas fa-comments"></i> Room Chat</h2>
+            <p class="section-subtitle">Bergabunglah dengan room chat untuk bertanya tentang produk atau berdiskusi dengan pengguna lain</p>
+            
+            <div class="chat-section" id="chatSection">
+                <div class="chat-header">
+                    <h3><i class="fas fa-comments"></i> Room Chat ENZY-STORE</h3>
+                    <div>
+                        <div class="user-info" id="userInfo">
+                            <i class="fas fa-user"></i>
+                            <span id="userName">Guest</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="chat-container" id="chatContainer">
+                    <!-- Messages will be loaded from Firebase -->
+                    <div class="message message-other">
+                        Selamat datang di Room Chat ENZY-STORE! Silakan set username untuk mulai chat.
+                        <div class="message-info">
+                            <span class="message-sender">System</span>
+                            <span class="message-time">Just now</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="chat-input-container">
+                    <div class="chat-input">
+                        <input type="text" id="messageInput" placeholder="Ketik pesan Anda...">
+                        <button id="sendMessageBtn"><i class="fas fa-paper-plane"></i></button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Username Modal -->
+    <div class="username-modal" id="usernameModal">
+        <div class="username-content">
+            <h3>Set Username untuk Chat</h3>
+            <div class="username-form">
+                <input type="text" id="usernameInput" placeholder="Masukkan username Anda" maxlength="20">
+                <button class="btn" id="saveUsernameBtn">Simpan Username</button>
+            </div>
+            <p style="text-align: center; margin-top: 15px; font-size: 0.9rem; color: var(--gray);">
+                Username akan disimpan di browser Anda
+            </p>
+        </div>
+    </div>
+
+    <!-- Chat Button -->
+    <button class="open-chat-btn" id="openChatBtn">
+        <i class="fas fa-comment-dots"></i>
+    </button>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container footer-content">
+            <div class="footer-logo">ENZY-STORE</div>
+            <p>Panel Nokos Pterodactyl Terpercaya • Ram 1GB - 10GB</p>
+            <p class="copyright">© 2023 ENZY-STORE. Semua hak dilindungi.</p>
+        </div>
+    </footer>
+
+    <!-- Firebase Configuration -->
+    <script>
+        // Firebase configuration dari project Anda
+        const firebaseConfig = {
+            apiKey: "AIzaSyBWh7mc4m-Lg0B5Hx_E6p1QljKM8Fwo2lg",
+            authDomain: "enzy-chat.firebaseapp.com",
+            projectId: "enzy-chat",
+            storageBucket: "enzy-chat.firebasestorage.app",
+            messagingSenderId: "1053081331387",
+            appId: "1:1053081331387:web:ef027c7414e060a566ab9e"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+    </script>
+
+    <!-- Main JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Products Data
+            const products = [];
+            for (let i = 1; i <= 10; i++) {
+                products.push({
+                    id: i,
+                    name: `Panel Nokos Pterodactyl`,
+                    ram: `${i} GB`,
+                    price: i * 1000, // Rp 1.000 per GB
+                    description: `Panel nokos dengan RAM ${i}GB untuk performa optimal.`
+                });
+            }
+
+            // Countries Data
+            const countries = [
+                { id: 'id', name: 'Indonesia', flag: '🇮🇩', price: 5000 },
+                { id: 'sg', name: 'Singapura', flag: '🇸🇬', price: 10000 },
+                { id: 'us', name: 'Amerika Serikat', flag: '🇺🇸', price: 10000 },
+                { id: 'jp', name: 'Jepang', flag: '🇯🇵', price: 10000 },
+                { id: 'nl', name: 'Belanda', flag: '🇳🇱', price: 10000 },
+                { id: 'de', name: 'Jerman', flag: '🇩🇪', price: 10000 }
+            ];
+
+            // Cart State
+            let cart = {
+                items: [],
+                selectedCountry: null,
+                total: 0
+            };
+
+            // Chat State
+            let currentUsername = null;
+            let messagesUnsubscribe = null;
+            let userId = null;
+
+            // DOM Elements
+            const productGrid = document.getElementById('productGrid');
+            const countryOptions = document.getElementById('countryOptions');
+            const cartIcon = document.getElementById('cartIcon');
+            const cartCount = document.getElementById('cartCount');
+            const cartModal = document.getElementById('cartModal');
+            const closeCart = document.getElementById('closeCart');
+            const cartItems = document.getElementById('cartItems');
+            const cartTotal = document.getElementById('cartTotal');
+            const checkoutBtn = document.getElementById('checkoutBtn');
+            const clearCartBtn = document.getElementById('clearCartBtn');
+            const openChatBtn = document.getElementById('openChatBtn');
+            const chatSection = document.getElementById('chatSection');
+            const chatContainer = document.getElementById('chatContainer');
+            const messageInput = document.getElementById('messageInput');
+            const sendMessageBtn = document.getElementById('sendMessageBtn');
+            const usernameModal = document.getElementById('usernameModal');
+            const usernameInput = document.getElementById('usernameInput');
+            const saveUsernameBtn = document.getElementById('saveUsernameBtn');
+            const userName = document.getElementById('userName');
+            const userInfo = document.getElementById('userInfo');
+
+            // Firebase Collections
+            const messagesRef = db.collection('messages');
+
+            // Initialize user from local storage
+            function initializeUser() {
+                // Generate unique user ID if not exists
+                userId = localStorage.getItem('enzy_userId');
+                if (!userId) {
+                    userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                    localStorage.setItem('enzy_userId', userId);
+                }
+                
+                // Load username from local storage
+                currentUsername = localStorage.getItem('enzy_username');
+                if (currentUsername) {
+                    userName.textContent = currentUsername;
+                } else {
+                    // Show username modal if no username set
+                    showUsernameModal();
+                }
+            }
+
+            // Username Functions
+            function showUsernameModal() {
+                usernameModal.style.display = 'flex';
+                usernameInput.focus();
+            }
+
+            function saveUsername() {
+                const username = usernameInput.value.trim();
+                
+                if (!username) {
+                    showNotification('Username tidak boleh kosong');
+                    return;
+                }
+                
+                if (username.length < 3) {
+                    showNotification('Username minimal 3 karakter');
+                    return;
+                }
+                
+                if (username.length > 20) {
+                    showNotification('Username maksimal 20 karakter');
+                    return;
+                }
+                
+                // Save to local storage
+                localStorage.setItem('enzy_username', username);
+                currentUsername = username;
+                userName.textContent = username;
+                usernameModal.style.display = 'none';
+                usernameInput.value = '';
+                
+                showNotification(`Username disimpan: ${username}`);
+            }
+
+            function changeUsername() {
+                const currentName = localStorage.getItem('enzy_username') || 'Guest';
+                const newUsername = prompt('Masukkan username baru:', currentName);
+                
+                if (newUsername && newUsername.trim() && newUsername.trim() !== currentName) {
+                    const trimmedUsername = newUsername.trim();
+                    if (trimmedUsername.length < 3) {
+                        showNotification('Username minimal 3 karakter');
+                        return;
+                    }
+                    
+                    if (trimmedUsername.length > 20) {
+                        showNotification('Username maksimal 20 karakter');
+                        return;
+                    }
+                    
+                    localStorage.setItem('enzy_username', trimmedUsername);
+                    currentUsername = trimmedUsername;
+                    userName.textContent = trimmedUsername;
+                    showNotification(`Username diubah menjadi: ${trimmedUsername}`);
+                }
+            }
+
+            // Initialize Products
+            function renderProducts() {
+                productGrid.innerHTML = '';
+                products.forEach(product => {
+                    const productCard = document.createElement('div');
+                    productCard.className = 'product-card';
+                    productCard.innerHTML = `
+                        <div class="product-header">
+                            <h3>${product.name}</h3>
+                            <div class="product-price">Rp ${product.price.toLocaleString('id-ID')}</div>
+                        </div>
+                        <div class="product-body">
+                            <ul class="product-features">
+                                <li>RAM <span class="feature-value">${product.ram}</span></li>
+                                <li>Harga per GB <span class="feature-value">Rp 1.000</span></li>
+                                <li>Tipe <span class="feature-value">Panel Nokos</span></li>
+                                <li>Panel <span class="feature-value">Pterodactyl</span></li>
+                            </ul>
+                            <button class="btn add-to-cart" data-id="${product.id}">
+                                <i class="fas fa-cart-plus"></i> Tambah ke Keranjang
+                            </button>
+                        </div>
+                    `;
+                    productGrid.appendChild(productCard);
+                });
+
+                // Add event listeners to add-to-cart buttons
+                document.querySelectorAll('.add-to-cart').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const productId = parseInt(this.getAttribute('data-id'));
+                        addToCart(productId);
+                    });
+                });
+            }
+
+            // Initialize Countries
+            function renderCountries() {
+                countryOptions.innerHTML = '';
+                countries.forEach(country => {
+                    const countryOption = document.createElement('div');
+                    countryOption.className = 'country-option';
+                    countryOption.innerHTML = `
+                        <div class="country-flag">${country.flag}</div>
+                        <div class="country-name">${country.name}</div>
+                        <div class="country-price">Rp ${country.price.toLocaleString('id-ID')}</div>
+                    `;
+                    countryOption.addEventListener('click', function() {
+                        selectCountry(country.id);
+                        document.querySelectorAll('.country-option').forEach(opt => {
+                            opt.classList.remove('selected');
+                        });
+                        this.classList.add('selected');
+                    });
+                    countryOptions.appendChild(countryOption);
+                });
+            }
+
+            // Cart Functions
+            function addToCart(productId) {
+                const product = products.find(p => p.id === productId);
+                const existingItem = cart.items.find(item => item.productId === productId);
+                
+                if (existingItem) {
+                    existingItem.quantity += 1;
+                } else {
+                    cart.items.push({
+                        productId: productId,
+                        name: product.name,
+                        ram: product.ram,
+                        price: product.price,
+                        quantity: 1
+                    });
+                }
+                
+                updateCart();
+                showNotification(`${product.name} ${product.ram} ditambahkan ke keranjang!`);
+            }
+
+            function selectCountry(countryId) {
+                const country = countries.find(c => c.id === countryId);
+                cart.selectedCountry = country;
+                updateCart();
+            }
+
+            function updateCart() {
+                // Calculate total
+                let total = 0;
+                
+                // Add products total
+                cart.items.forEach(item => {
+                    total += item.price * item.quantity;
+                });
+                
+                // Add country fee if selected
+                if (cart.selectedCountry) {
+                    total += cart.selectedCountry.price;
+                }
+                
+                cart.total = total;
+                
+                // Update cart count
+                const itemCount = cart.items.reduce((sum, item) => sum + item.quantity, 0);
+                cartCount.textContent = itemCount;
+                
+                // Update cart modal if open
+                renderCartItems();
+            }
+
+            function renderCartItems() {
+                cartItems.innerHTML = '';
+                
+                if (cart.items.length === 0 && !cart.selectedCountry) {
+                    cartItems.innerHTML = '<p style="text-align: center; color: var(--gray);">Keranjang belanja kosong</p>';
+                    cartTotal.textContent = 'Rp 0';
+                    return;
+                }
+                
+                // Render product items
+                cart.items.forEach(item => {
+                    const itemElement = document.createElement('div');
+                    itemElement.className = 'cart-item';
+                    itemElement.innerHTML = `
+                        <div>
+                            <strong>${item.name} ${item.ram}</strong>
+                            <div>${item.quantity} x Rp ${item.price.toLocaleString('id-ID')}</div>
+                        </div>
+                        <div>
+                            <strong>Rp ${(item.price * item.quantity).toLocaleString('id-ID')}</strong>
+                            <button class="remove-item" data-id="${item.productId}" style="margin-left: 10px; color: var(--danger); background: none; border: none; cursor: pointer;">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    `;
+                    cartItems.appendChild(itemElement);
+                });
+                
+                // Render country selection if exists
+                if (cart.selectedCountry) {
+                    const countryElement = document.createElement('div');
+                    countryElement.className = 'cart-item';
+                    countryElement.innerHTML = `
+                        <div>
+                            <strong>Server ${cart.selectedCountry.name}</strong>
+                            <div>${cart.selectedCountry.flag} Negara Server</div>
+                        </div>
+                        <div>
+                            <strong>Rp ${cart.selectedCountry.price.toLocaleString('id-ID')}</strong>
+                            <button class="remove-country" style="margin-left: 10px; color: var(--danger); background: none; border: none; cursor: pointer;">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    `;
+                    cartItems.appendChild(countryElement);
+                }
+                
+                // Update total
+                cartTotal.textContent = `Rp ${cart.total.toLocaleString('id-ID')}`;
+                
+                // Add event listeners to remove buttons
+                document.querySelectorAll('.remove-item').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const productId = parseInt(this.getAttribute('data-id'));
+                        removeFromCart(productId);
+                    });
+                });
+                
+                if (cart.selectedCountry) {
+                    document.querySelector('.remove-country').addEventListener('click', function() {
+                        cart.selectedCountry = null;
+                        updateCart();
+                    });
+                }
+            }
+
+            function removeFromCart(productId) {
+                cart.items = cart.items.filter(item => item.productId !== productId);
+                updateCart();
+            }
+
+            function clearCart() {
+                cart.items = [];
+                cart.selectedCountry = null;
+                updateCart();
+                showNotification('Keranjang belanja telah dikosongkan');
+            }
+
+            function checkout() {
+                if (cart.items.length === 0) {
+                    alert('Keranjang belanja kosong. Tambahkan produk terlebih dahulu.');
+                    return;
+                }
+                
+                if (!cart.selectedCountry) {
+                    alert('Silakan pilih negara server terlebih dahulu.');
+                    return;
+                }
+                
+                if (!currentUsername) {
+                    showUsernameModal();
+                    showNotification('Silakan set username terlebih dahulu');
+                    return;
+                }
+                
+                let message = `[ORDER] Saya ingin membeli:\n`;
+                cart.items.forEach(item => {
+                    message += `- ${item.name} ${item.ram} (${item.quantity}x): Rp ${(item.price * item.quantity).toLocaleString('id-ID')}\n`;
+                });
+                message += `Server: ${cart.selectedCountry.name} ${cart.selectedCountry.flag}: Rp ${cart.selectedCountry.price.toLocaleString('id-ID')}\n`;
+                message += `Total: Rp ${cart.total.toLocaleString('id-ID')}\n`;
+                message += `Bagaimana cara pembayarannya?`;
+                
+                // Send order to chat
+                sendChatMessage(message);
+                
+                // Clear cart
+                clearCart();
+                
+                // Show chat if not visible
+                if (chatSection.style.display !== 'flex') {
+                    chatSection.style.display = 'flex';
+                    openChatBtn.style.display = 'none';
+                    chatSection.scrollIntoView({ behavior: 'smooth' });
+                }
+                
+                showNotification('Pesanan telah dikirim ke room chat!');
+            }
+
+            // Chat Functions (Firebase Real-time)
+            function loadChatMessages() {
+                // Clear existing messages
+                chatContainer.innerHTML = '';
+                
+                // Unsubscribe from previous listener if exists
+                if (messagesUnsubscribe) {
+                    messagesUnsubscribe();
+                }
+                
+                // Subscribe to messages in real-time
+                messagesUnsubscribe = messagesRef
+                    .orderBy('timestamp', 'desc')
+                    .limit(50)
+                    .onSnapshot((snapshot) => {
+                        // Clear chat container
+                        chatContainer.innerHTML = '';
+                        
+                        // Convert to array and reverse to show latest at bottom
+                        const messages = [];
+                        snapshot.forEach((doc) => {
+                            messages.unshift({
+                                id: doc.id,
+                                ...doc.data()
+                            });
+                        });
+                        
+                        // Add messages to chat
+                        messages.forEach((message) => {
+                            addMessageToChat(message);
+                        });
+                        
+                        // If no messages, add welcome message
+                        if (messages.length === 0) {
+                            addSystemMessage('Selamat datang di Room Chat ENZY-STORE!');
+                        }
+                        
+                        // Scroll to bottom
+                        chatContainer.scrollTop = chatContainer.scrollHeight;
+                    }, (error) => {
+                        console.error('Error loading messages:', error);
+                        showNotification('Gagal memuat pesan: ' + error.message);
+                    });
+            }
+
+            function sendChatMessage(text) {
+                if (!currentUsername) {
+                    showUsernameModal();
+                    showNotification('Silakan set username terlebih dahulu');
+                    return;
+                }
+                
+                if (!text.trim()) {
+                    return;
+                }
+                
+                const message = {
+                    text: text.trim(),
+                    userId: userId,
+                    username: currentUsername,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                };
+                
+                messagesRef.add(message)
+                    .then(() => {
+                        // Message sent successfully
+                        messageInput.value = '';
+                    })
+                    .catch((error) => {
+                        console.error('Error sending message:', error);
+                        showNotification('Gagal mengirim pesan: ' + error.message);
+                    });
+            }
+
+            function addMessageToChat(messageData) {
+                const messageElement = document.createElement('div');
+                
+                // Check if message is from current user
+                const isCurrentUser = messageData.userId === userId;
+                
+                messageElement.className = `message ${isCurrentUser ? 'message-user' : 'message-other'}`;
+                
+                // Format timestamp
+                let timeString = 'Just now';
+                if (messageData.timestamp) {
+                    const date = messageData.timestamp.toDate();
+                    timeString = `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+                }
+                
+                messageElement.innerHTML = `
+                    ${messageData.text}
+                    <div class="message-info">
+                        <span class="message-sender">${messageData.username || 'Anonymous'}</span>
+                        <span class="message-time">${timeString}</span>
+                    </div>
+                `;
+                
+                chatContainer.appendChild(messageElement);
+            }
+
+            function addSystemMessage(text) {
+                const messageElement = document.createElement('div');
+                messageElement.className = 'message message-other';
+                messageElement.innerHTML = `
+                    ${text}
+                    <div class="message-info">
+                        <span class="message-sender">System</span>
+                        <span class="message-time">Just now</span>
+                    </div>
+                `;
+                chatContainer.appendChild(messageElement);
+            }
+
+            function showNotification(message) {
+                // Create notification element
+                const notification = document.createElement('div');
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background-color: var(--success);
+                    color: white;
+                    padding: 12px 20px;
+                    border-radius: 8px;
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                    z-index: 1000;
+                    animation: slideIn 0.3s ease;
+                    max-width: 300px;
+                `;
+                notification.textContent = message;
+                document.body.appendChild(notification);
+                
+                // Remove after 3 seconds
+                setTimeout(() => {
+                    notification.style.animation = 'slideOut 0.3s ease';
+                    setTimeout(() => {
+                        document.body.removeChild(notification);
+                    }, 300);
+                }, 3000);
+            }
+
+            // Add CSS animations for notifications
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes slideIn {
+                    from { transform: translateX(100%); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
+                }
+                @keyframes slideOut {
+                    from { transform: translateX(0); opacity: 1; }
+                    to { transform: translateX(100%); opacity: 0; }
+                }
+            `;
+            document.head.appendChild(style);
+
+            // Event Listeners
+            cartIcon.addEventListener('click', () => {
+                cartModal.style.display = 'flex';
+            });
+
+            closeCart.addEventListener('click', () => {
+                cartModal.style.display = 'none';
+            });
+
+            cartModal.addEventListener('click', (e) => {
+                if (e.target === cartModal) {
+                    cartModal.style.display = 'none';
+                }
+            });
+
+            checkoutBtn.addEventListener('click', checkout);
+            clearCartBtn.addEventListener('click', clearCart);
+
+            openChatBtn.addEventListener('click', () => {
+                chatSection.style.display = 'flex';
+                openChatBtn.style.display = 'none';
+                chatSection.scrollIntoView({ behavior: 'smooth' });
+                
+                // Load messages if not already loaded
+                if (!messagesUnsubscribe) {
+                    loadChatMessages();
+                }
+            });
+
+            // Close chat when clicking outside (for mobile)
+            chatSection.addEventListener('click', (e) => {
+                if (e.target === chatSection) {
+                    chatSection.style.display = 'none';
+                    openChatBtn.style.display = 'flex';
+                }
+            });
+
+            sendMessageBtn.addEventListener('click', () => {
+                sendChatMessage(messageInput.value);
+            });
+            
+            messageInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    sendChatMessage(messageInput.value);
+                }
+            });
+
+            saveUsernameBtn.addEventListener('click', saveUsername);
+            
+            usernameInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    saveUsername();
+                }
+            });
+
+            usernameModal.addEventListener('click', (e) => {
+                if (e.target === usernameModal) {
+                    // Don't close if no username set
+                    if (!currentUsername) {
+                        showNotification('Silakan set username terlebih dahulu');
+                        return;
+                    }
+                    usernameModal.style.display = 'none';
+                }
+            });
+
+            // Change username when clicking user info
+            userInfo.addEventListener('click', changeUsername);
+
+            // Initialize
+            initializeUser();
+            renderProducts();
+            renderCountries();
+            updateCart();
+            
+            // Load initial messages
+            loadChatMessages();
+        });
+    </script>
+</body>
+</html>
